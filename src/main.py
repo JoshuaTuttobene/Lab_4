@@ -81,57 +81,57 @@ def task2_fun(shares):
 # This code creates a share, a queue, and two tasks, then starts the tasks. The
 # tasks run until somebody presses ENTER, at which time the scheduler stops and
 # printouts show diagnostic information about the tasks, share, and queue.
-if __name__ == "__main__":
-    print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
-          "Press Ctrl-C to stop and show diagnostics.")
-    
-    # init queue
-    time = cqueue.FloatQueue(250)
-    pos = cqueue.FloatQueue(250)
+#if __name__ == "__main__":
+print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
+      "Press Ctrl-C to stop and show diagnostics.")
 
-    # Motor init
-    enable_pin = pyb.Pin(pyb.Pin.board.PA10, pyb.Pin.OUT_PP)
-    in1pin = pyb.Pin.cpu.B4
-    in2pin = pyb.Pin.cpu.B5
-    tim3 = pyb.Timer(3, freq=20000)
-    motor = MD.MotorDriver(enable_pin, in1pin, in2pin, tim3)
-    motor.enable()
+# init queue
+time = cqueue.FloatQueue(250)
+pos = cqueue.FloatQueue(250)
 
-    # Encoder init
-    pin_A = pyb.Pin.cpu.C6
-    pin_B = pyb.Pin.cpu.C7
-    tim8 = pyb.Timer(8, prescaler = 0, period = 2**16-1)
-    encoder = ER.Encoder(pin_A, pin_B, tim8)
+# Motor init
+enable_pin = pyb.Pin(pyb.Pin.board.PA10, pyb.Pin.OUT_PP)
+in1pin = pyb.Pin.cpu.B4
+in2pin = pyb.Pin.cpu.B5
+tim3 = pyb.Timer(3, freq=20000)
+motor = MD.MotorDriver(enable_pin, in1pin, in2pin, tim3)
+motor.enable()
 
-    # Create a share and a queue to test function and diagnostic printouts
-    share0 = task_share.Share('h', thread_protect=False, name="Share 0")
-    q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
-                          name="Queue 0")
+# Encoder init
+pin_A = pyb.Pin.cpu.C6
+pin_B = pyb.Pin.cpu.C7
+tim8 = pyb.Timer(8, prescaler = 0, period = 2**16-1)
+encoder = ER.Encoder(pin_A, pin_B, tim8)
 
-    # Create the tasks. If trace is enabled for any task, memory will be
-    # allocated for state transition tracing, and the application will run out
-    # of memory after a while and quit. Therefore, use tracing only for 
-    # debugging and set trace to False when it's not needed
-    task1 = cotask.Task(task1_fun, name="Task_1", priority=1, period=100,
-                        profile=True, trace=False, shares=(share0, q0))
-    task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=1500,
-                        profile=True, trace=False, shares=(share0, q0))
-    cotask.task_list.append(task1)
-    cotask.task_list.append(task2)
+# Create a share and a queue to test function and diagnostic printouts
+share0 = task_share.Share('h', thread_protect=False, name="Share 0")
+q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
+                      name="Queue 0")
 
-    # Run the memory garbage collector to ensure memory is as defragmented as
-    # possible before the real-time scheduler is started
-    gc.collect()
+# Create the tasks. If trace is enabled for any task, memory will be
+# allocated for state transition tracing, and the application will run out
+# of memory after a while and quit. Therefore, use tracing only for 
+# debugging and set trace to False when it's not needed
+task1 = cotask.Task(task1_fun, name="Task_1", priority=1, period=100,
+                    profile=True, trace=False, shares=(share0, q0))
+task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=1500,
+                    profile=True, trace=False, shares=(share0, q0))
+cotask.task_list.append(task1)
+cotask.task_list.append(task2)
 
-    # Run the scheduler with the chosen scheduling algorithm. Quit if ^C pressed
-    while True:
-        try:
-            cotask.task_list.pri_sched()
-        except KeyboardInterrupt:
-            break
+# Run the memory garbage collector to ensure memory is as defragmented as
+# possible before the real-time scheduler is started
+gc.collect()
 
-    # Print a table of task data and a table of shared information data
-    print('\n' + str (cotask.task_list))
-    print(task_share.show_all())
-    print(task1.get_trace())
-    print('')
+# Run the scheduler with the chosen scheduling algorithm. Quit if ^C pressed
+while True:
+    try:
+        cotask.task_list.pri_sched()
+    except KeyboardInterrupt:
+        break
+
+# Print a table of task data and a table of shared information data
+print('\n' + str (cotask.task_list))
+print(task_share.show_all())
+print(task1.get_trace())
+print('')
