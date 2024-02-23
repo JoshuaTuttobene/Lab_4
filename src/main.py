@@ -21,7 +21,7 @@ import CL_Proportional_Control as CLPC
 import utime
 import cqueue
 import pyb
-import micropython
+
 
 first = True
 
@@ -36,7 +36,6 @@ def task1_fun(shares):
         time.put(utime.ticks_ms()-init)   # put time into queue
         pos.put(encoder.read())          # put position into queue
         motor.set_duty_cycle(pwm)     # set new pwm
-        utime.sleep_ms(10)    # sleep 10 ms to give delay before next reading
         yield 0
             
 #     # Get references to the share and queue which have been passed to this task
@@ -57,16 +56,11 @@ def task2_fun(shares):
     @param shares A tuple of a share and queue from which this task gets data
     """
     while True:
-    # Get references to the share and queue which have been passed to this task
-    #the_share, the_queue = shares
-        
-#     while True:
-        # Show everything currently in the queue and the value in the share
-#         print(f"Share: {the_share.get ()}, Queue: ", end='')
-#         while q0.any():
-#             print(f"{the_queue.get ()} ", end='')
-#         print('')
-# 
+#         pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
+#         time.put(utime.ticks_ms()-init)   # put time into queue
+#         pos.put(encoder.read())          # put position into queue
+#         motor.set_duty_cycle(pwm)     # set new pwm
+
         yield 0
 
 
@@ -80,6 +74,9 @@ print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
 # init queue
 time = cqueue.FloatQueue(250)
 pos = cqueue.FloatQueue(250)
+
+time_2 = cqueue.FloatQueue(250)
+pos_2 = cqueue.FloatQueue(250)
 
 # Motor init
 enable_pin = pyb.Pin(pyb.Pin.board.PA10, pyb.Pin.OUT_PP)
@@ -111,7 +108,7 @@ q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
 # debugging and set trace to False when it's not needed
 task1 = cotask.Task(task1_fun, name="Task_1", priority=1, period=15,
                     profile=True, trace=False, shares=(share0, q0))
-task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=15,
+task2 = cotask.Task(task2_fun, name="Task_2", priority=1, period=15,
                     profile=True, trace=False, shares=(share0, q0))
 cotask.task_list.append(task1)
 cotask.task_list.append(task2)
