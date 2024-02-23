@@ -7,11 +7,12 @@ Changing the multitasking code to run too slowly results in a less stable contro
 
 Step Response at Task Period of 15ms:
 
-![image](https://github.com/JoshuaTuttobene/Lab_4/assets/107731390/5bb1512b-c407-4655-a2f8-f65ae5a8ff06)
+![image](https://github.com/JoshuaTuttobene/Lab_4/assets/107731390/337aed52-4fca-443a-b4fa-6f1faad29c16)
 
 
 Step Response at Task Period of 30ms:
 
-![image](https://github.com/JoshuaTuttobene/Lab_4/assets/107731390/0ce7e5d3-d926-4173-ba23-ee0732c97f7e)
+![image](https://github.com/JoshuaTuttobene/Lab_4/assets/107731390/b8e40741-e157-43f6-b62f-ce363dafc788)
+
 
 We recommend running the tasks at a period of 15ms or quicker to get smooth control on the motor.
