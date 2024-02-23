@@ -23,41 +23,32 @@ import cqueue
 import pyb
 import micropython
 
+first = True
+
 def task1_fun(shares):
     """!
     Task which puts things into a share and a queue.
     @param shares A list holding the share and queue used by this task
     """
-    
-    # Controller init
     while True:
-        kp = float(input("Enter a Kp value:"))  # input for Kp
-        CL = CLPC.ClosedLoop_P(kp,50000) # use small Kp
-        encoder.zero()  # zero encoder before using
-        init = utime.ticks_ms() # initial time
-        for val in range(250):    # collect data for length of queue to fill
-            pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
-            time.put(utime.ticks_ms()-init)   # put time into queue
-            pos.put(encoder.read())          # put position into queue
-            motor.set_duty_cycle(pwm)     # set new pwm
-            utime.sleep_ms(10)    # sleep 10 ms to give delay before next reading
-
-        for Queue_Size in range(250):  # for loop to print and empty queue
-            print(f"{time.get()}, {pos.get()}")
-            if time.any() == False:
-                print("end")     # print end to indicate completion of data
-                motor.set_duty_cycle(0) # turn off motor once data has been collected
-            
-    # Get references to the share and queue which have been passed to this task
-    my_share, my_queue = shares
-
-    counter = 0
-    while True:
-        my_share.put(counter)
-        my_queue.put(counter)
-        counter += 1
-
+        
+        pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
+        time.put(utime.ticks_ms()-init)   # put time into queue
+        pos.put(encoder.read())          # put position into queue
+        motor.set_duty_cycle(pwm)     # set new pwm
+        utime.sleep_ms(10)    # sleep 10 ms to give delay before next reading
         yield 0
+            
+#     # Get references to the share and queue which have been passed to this task
+#     my_share, my_queue = shares
+# 
+#     counter = 0
+#     while True:
+#         my_share.put(counter)
+#         my_queue.put(counter)
+#         counter += 1
+# 
+    
 
 
 def task2_fun(shares):
@@ -65,16 +56,17 @@ def task2_fun(shares):
     Task which takes things out of a queue and share and displays them.
     @param shares A tuple of a share and queue from which this task gets data
     """
-    # Get references to the share and queue which have been passed to this task
-    the_share, the_queue = shares
-
     while True:
+    # Get references to the share and queue which have been passed to this task
+    #the_share, the_queue = shares
+        
+#     while True:
         # Show everything currently in the queue and the value in the share
-        print(f"Share: {the_share.get ()}, Queue: ", end='')
-        while q0.any():
-            print(f"{the_queue.get ()} ", end='')
-        print('')
-
+#         print(f"Share: {the_share.get ()}, Queue: ", end='')
+#         while q0.any():
+#             print(f"{the_queue.get ()} ", end='')
+#         print('')
+# 
         yield 0
 
 
@@ -103,6 +95,11 @@ pin_B = pyb.Pin.cpu.C7
 tim8 = pyb.Timer(8, prescaler = 0, period = 2**16-1)
 encoder = ER.Encoder(pin_A, pin_B, tim8)
 
+kp = float(input("Enter a Kp value:"))  # input for Kp
+CL = CLPC.ClosedLoop_P(kp,50000) # use small Kp
+encoder.zero()  # zero encoder before using
+init = utime.ticks_ms()
+
 # Create a share and a queue to test function and diagnostic printouts
 share0 = task_share.Share('h', thread_protect=False, name="Share 0")
 q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
@@ -112,9 +109,9 @@ q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
 # allocated for state transition tracing, and the application will run out
 # of memory after a while and quit. Therefore, use tracing only for 
 # debugging and set trace to False when it's not needed
-task1 = cotask.Task(task1_fun, name="Task_1", priority=1, period=100,
+task1 = cotask.Task(task1_fun, name="Task_1", priority=1, period=15,
                     profile=True, trace=False, shares=(share0, q0))
-task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=1500,
+task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=15,
                     profile=True, trace=False, shares=(share0, q0))
 cotask.task_list.append(task1)
 cotask.task_list.append(task2)
@@ -125,13 +122,22 @@ gc.collect()
 
 # Run the scheduler with the chosen scheduling algorithm. Quit if ^C pressed
 while True:
-    try:
+    #try:
+    if not time.full() == True:
         cotask.task_list.pri_sched()
-    except KeyboardInterrupt:
+    else:
+    #except KeyboardInterrupt:
         break
 
 # Print a table of task data and a table of shared information data
+for Queue_Size in range(250):  # for loop to print and empty queue
+    print(f"{time.get()}, {pos.get()}")
+    if time.any() == False:
+        print("end")     # print end to indicate completion of data
+        motor.set_duty_cycle(0) # turn off motor once data has been collected
+
 print('\n' + str (cotask.task_list))
 print(task_share.show_all())
 print(task1.get_trace())
 print('')
+
