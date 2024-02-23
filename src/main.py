@@ -23,20 +23,21 @@ import cqueue
 import pyb
 
 
-first = True
-
 def task1_fun(shares):
     """!
     Task which puts things into a share and a queue.
     @param shares A list holding the share and queue used by this task
     """
+    init = utime.ticks_ms()
     while True:
-        
-        pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
-        time.put(utime.ticks_ms()-init)   # put time into queue
-        pos.put(encoder.read())          # put position into queue
-        motor.set_duty_cycle(pwm)     # set new pwm
-        yield 0
+        if time.full() == False:
+            pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
+            time.put(utime.ticks_ms()-init)   # put time into queue
+            pos.put(encoder.read())          # put position into queue
+            motor.set_duty_cycle(pwm)     # set new pwm
+        else:
+            motor.set_duty_cycle(0)
+        yield 
             
 #     # Get references to the share and queue which have been passed to this task
 #     my_share, my_queue = shares
@@ -55,14 +56,16 @@ def task2_fun(shares):
     Task which takes things out of a queue and share and displays them.
     @param shares A tuple of a share and queue from which this task gets data
     """
+    init_2 = utime.ticks_ms()
     while True:
-#         pwm = CL.run(encoder.read())  # set return from controller as pwm for motor
-#         time.put(utime.ticks_ms()-init)   # put time into queue
-#         pos.put(encoder.read())          # put position into queue
-#         motor.set_duty_cycle(pwm)     # set new pwm
-
-        yield 0
-
+        if time_2.full() == False:
+            pwm = CL_2.run(encoder_2.read())  # set return from controller as pwm for motor
+            time_2.put(utime.ticks_ms()-init_2)   # put time into queue
+            pos_2.put(encoder_2.read())          # put position into queue
+            motor_2.set_duty_cycle(pwm)     # set new pwm
+        else:
+            motor_2.set_duty_cycle(0)
+        yield
 
 # This code creates a share, a queue, and two tasks, then starts the tasks. The
 # tasks run until somebody presses ENTER, at which time the scheduler stops and
@@ -75,6 +78,7 @@ print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
 time = cqueue.FloatQueue(250)
 pos = cqueue.FloatQueue(250)
 
+# second init queue
 time_2 = cqueue.FloatQueue(250)
 pos_2 = cqueue.FloatQueue(250)
 
@@ -86,16 +90,36 @@ tim3 = pyb.Timer(3, freq=20000)
 motor = MD.MotorDriver(enable_pin, in1pin, in2pin, tim3)
 motor.enable()
 
+# Motor init 2
+enable_pin_2 = pyb.Pin(pyb.Pin.board.PC1, pyb.Pin.OUT_PP)
+in1pin_2 = pyb.Pin.cpu.A0
+in2pin_2 = pyb.Pin.cpu.A1
+tim5 = pyb.Timer(5, freq=20000)
+motor_2 = MD.MotorDriver(enable_pin_2, in1pin_2, in2pin_2, tim5)
+motor_2.enable()
+
 # Encoder init
 pin_A = pyb.Pin.cpu.C6
 pin_B = pyb.Pin.cpu.C7
 tim8 = pyb.Timer(8, prescaler = 0, period = 2**16-1)
 encoder = ER.Encoder(pin_A, pin_B, tim8)
 
-kp = float(input("Enter a Kp value:"))  # input for Kp
+# Encoder init 2
+pin_A = pyb.Pin.cpu.B6
+pin_B = pyb.Pin.cpu.B7
+tim4 = pyb.Timer(4, prescaler = 0, period = 2**16-1)
+encoder_2 = ER.Encoder(pin_A, pin_B, tim4)
+
+# run for 1
+kp = float(input("Enter a Kp value for 1:"))  # input for Kp
 CL = CLPC.ClosedLoop_P(kp,50000) # use small Kp
 encoder.zero()  # zero encoder before using
-init = utime.ticks_ms()
+
+
+# run for 2
+kp_2 = float(input("Enter a Kp value for 2:"))  # input for Kp
+CL_2 = CLPC.ClosedLoop_P(kp_2,50000) # use small Kp
+encoder_2.zero()  # zero encoder before using
 
 # Create a share and a queue to test function and diagnostic printouts
 share0 = task_share.Share('h', thread_protect=False, name="Share 0")
@@ -127,11 +151,16 @@ while True:
         break
 
 # Print a table of task data and a table of shared information data
-for Queue_Size in range(250):  # for loop to print and empty queue
+for Queue_Size in range(250-1):  # for loop to print and empty queue
     print(f"{time.get()}, {pos.get()}")
     if time.any() == False:
         print("end")     # print end to indicate completion of data
-        motor.set_duty_cycle(0) # turn off motor once data has been collected
+        #motor.set_duty_cycle(0) # turn off motor once data has been collected
+for Queue_Size in range(250-1):  # for loop to print and empty queue
+    print('motor_2',f"{time_2.get()}, {pos_2.get()}")
+    if time_2.any() == False:
+        print("end")     # print end to indicate completion of data
+        #motor_2.set_duty_cycle(0) # turn off motor once data has been collected
 
 print('\n' + str (cotask.task_list))
 print(task_share.show_all())
