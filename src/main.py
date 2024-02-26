@@ -36,8 +36,10 @@ def task1_fun(shares):
             pos.put(encoder.read())          # put position into queue
             motor.set_duty_cycle(pwm)     # set new pwm
         else:
-            motor.set_duty_cycle(0)
-        yield 
+            motor.disable()
+            break
+        yield
+    return
             
 #     # Get references to the share and queue which have been passed to this task
 #     my_share, my_queue = shares
@@ -64,8 +66,10 @@ def task2_fun(shares):
             pos_2.put(encoder_2.read())          # put position into queue
             motor_2.set_duty_cycle(pwm)     # set new pwm
         else:
-            motor_2.set_duty_cycle(0)
+            motor_2.disable()
+            break
         yield
+    return
 
 # This code creates a share, a queue, and two tasks, then starts the tasks. The
 # tasks run until somebody presses ENTER, at which time the scheduler stops and
@@ -149,18 +153,21 @@ while True:
     else:
     #except KeyboardInterrupt:
         break
-
+motor.disable()
+motor_2.disable()
 # Print a table of task data and a table of shared information data
-for Queue_Size in range(250-1):  # for loop to print and empty queue
+while True:  # for loop to print and empty queue
     print(f"{time.get()}, {pos.get()}")
     if time.any() == False:
         print("end")     # print end to indicate completion of data
-        #motor.set_duty_cycle(0) # turn off motor once data has been collected
-for Queue_Size in range(250-1):  # for loop to print and empty queue
-    print('motor_2',f"{time_2.get()}, {pos_2.get()}")
+        motor.disable()   # turn off motor once data has been collected
+        break
+while True:
+    print(f"{time_2.get()}, {pos_2.get()}")
     if time_2.any() == False:
         print("end")     # print end to indicate completion of data
-        #motor_2.set_duty_cycle(0) # turn off motor once data has been collected
+        motor_2.disable() # turn off motor once data has been collected
+        break
 
 print('\n' + str (cotask.task_list))
 print(task_share.show_all())

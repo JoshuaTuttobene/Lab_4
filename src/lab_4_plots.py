@@ -14,7 +14,6 @@ https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_tk_sgskip.htm
 """
 
 import time
-import tkinter
 import serial
 import matplotlib.pyplot as plt
 
@@ -28,15 +27,21 @@ ser.timeout = 8
 
 ser.write(b'\x04') # send ctrl-D to the serial port
 
-time.sleep(5)
+# time.sleep(5)
 # Create empty arrays to append data from microcontroller
 t_data = []
 p_data = []
+t2_data = []
+p2_data = []
  # Takes user input and then sends to microcontrollerser.write(input("Enter a Kp value:").encode('ascii'))
-ser.write(input("Enter a Kp value:").encode('ascii'))
+ser.write(input("Enter a Kp_1 value:").encode('ascii'))
 ser.write(b'\r')
-time.sleep(5) # sleep to give the motor time to perform response
-
+# time.sleep(1)
+ser.write(input("Enter a Kp_2 value:").encode('ascii'))
+ser.write(b'\r')
+# time.sleep(10) # sleep to give the motor time to perform response
+print('start')
+plt.clf()
 # loop to get data from serial port until 'end' is printed, signifying the end of data
 for line in range(1000):
     try:
@@ -49,17 +54,43 @@ for line in range(1000):
             # Append data by adding to end in array
             t_data.append(t)
             p_data.append(p)
-        else:
+        elif pos == 'end':
             break
-
+        else:
+            pass
     except ValueError:     # anything that is not a data entry don't show
         #print('invalid entry')
         pass
-print(p_data)   
+        
+for line in range(1000):
+    try:
+        ser.write(b'\x02') # need, dont delete, swith out of raw-REPL mode
+        pos2 = ser.readline().decode('utf-8')
+        if not pos2 == 'end':
+            pos2 = pos2.split(',')
+            t2 = float(''.join(pos2[0:1]))
+            p2 = float(''.join(pos2[1:2]))
+            # Append data by adding to end in array
+            t2_data.append(t2)
+            p2_data.append(p2)
+        elif pos2 == 'end':
+            break
+        else:
+            pass
+    except ValueError:     # anything that is not a data entry don't show
+        #print('invalid entry')
+        pass
+            
+print(p_data)
+print(p2_data)
 # Draw the plot from the measured data 
-plt.plot(t_data,p_data,'.', markersize=4)
+
+plt.plot(t_data,p_data,'--', markersize=4)
+
+plt.plot(t2_data,p2_data,'o', markersize=4)
 plt.xlabel('Time (ms)')
 plt.ylabel('Encoder Position')
 plt.xlim(0, 1500)
 plt.grid(True)
 plt.show()
+# plt.clf()
