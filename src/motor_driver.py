@@ -93,10 +93,19 @@ class MotorDriver:
         #print (f"Setting duty cycle to {level}")
             
     def enable(self):
+        """!
+        This method enables the motor. No parameters required.
+        Sets the enable pin high.
+        """
+
         # To enable the motor
         self.en_pin.high()
         
     def disable(self):
+        """!
+        This method disables the motor. No parameters required.
+        Sets the enable pin low.
+        """
         # to disable the motor
         self.en_pin.low()
 

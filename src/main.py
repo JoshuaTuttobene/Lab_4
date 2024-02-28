@@ -1,11 +1,11 @@
 """!
-@file basic_tasks.py
-    This file contains a demonstration program that runs some tasks for motor control, an
-    inter-task shared variable, and a queue. The tasks don't really @b do
-    anything; the example just shows how these elements are created and run.
+@file main.py
+    This file contains a program that runs tasks to perform motor control for two motors.
+    It takes inputs for setpoint and Kp value and runs a step response.
+    The output from this file is the response data printed so it can be used in an external file.
 
 @author Aaron Escamilla, Karen Morales De Leon, Joshua Tuttobene
-@date   2024-Feb-28 JRR Created from the remains of previous example
+@date   2024-Feb-29
 @copyright (c) 2015-2021 by JR Ridgely and released under the GNU
     Public License, Version 2. 
 """
@@ -45,7 +45,7 @@ def task1_fun(shares):
 
 def task2_fun(shares):
     """!
-    Task 2 also puts thins into a share and a queue. Task 2 is for the secondary motor we use.
+    Task 2 also puts things into a share and a queue. Task 2 is for the secondary motor we use.
     It uses the motor class, encoder class,
     and the closed loop proportional controller class
     @param shares A tuple of a share and queue from which this task gets data
