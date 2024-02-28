@@ -86,6 +86,8 @@ pos = cqueue.FloatQueue(250)
 time_2 = cqueue.FloatQueue(250)
 pos_2 = cqueue.FloatQueue(250)
 
+print('queue intialized')
+
 # Motor init
 enable_pin = pyb.Pin(pyb.Pin.board.PA10, pyb.Pin.OUT_PP)
 in1pin = pyb.Pin.cpu.B4
@@ -101,6 +103,7 @@ in2pin_2 = pyb.Pin.cpu.A1
 tim5 = pyb.Timer(5, freq=20000)
 motor_2 = MD.MotorDriver(enable_pin_2, in1pin_2, in2pin_2, tim5)
 motor_2.enable()
+print('motors initialized')
 
 # Encoder init
 pin_A = pyb.Pin.cpu.C6
@@ -113,6 +116,7 @@ pin_A = pyb.Pin.cpu.B6
 pin_B = pyb.Pin.cpu.B7
 tim4 = pyb.Timer(4, prescaler = 0, period = 2**16-1)
 encoder_2 = ER.Encoder(pin_A, pin_B, tim4)
+print('encoder intialized')
 
 # run for 1
 kp = float(input("Enter a Kp value for 1:"))  # input for Kp
@@ -124,6 +128,8 @@ encoder.zero()  # zero encoder before using
 kp_2 = float(input("Enter a Kp value for 2:"))  # input for Kp
 CL_2 = CLPC.ClosedLoop_P(kp_2,50000) # use small Kp
 encoder_2.zero()  # zero encoder before using
+
+print('kps set')
 
 # Create a share and a queue to test function and diagnostic printouts
 share0 = task_share.Share('h', thread_protect=False, name="Share 0")
